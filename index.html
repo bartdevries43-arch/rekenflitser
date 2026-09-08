@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rekenflitser · automatiseren</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0; padding:0; box-sizing:border-box;}
+  :root{
+    --ink:#212a35; --muted:#6a7683; --accent:#7c5cff; --accent2:#2fa37a;
+    --line:rgba(124,92,255,.20); --line-2:rgba(124,92,255,.32);
+    --card:rgba(255,255,255,.86); --card-2:#ffffff; --veld:#ffffff;
+    --shadow:0 18px 44px rgba(70,58,120,.12); --radius:22px;
+    --bg:
+      radial-gradient(circle at 10% 6%, rgba(178,236,213,.55), transparent 460px),
+      radial-gradient(circle at 92% 8%, rgba(206,188,255,.62), transparent 520px),
+      radial-gradient(circle at 50% 112%, rgba(178,236,213,.30), transparent 560px),
+      #eef1f7;
+  }
+  body.digibord{
+    --ink:#f2f6fb; --muted:#9fb0c2; --accent:#a68bff; --accent2:#4fd3a0;
+    --line:rgba(255,255,255,.14); --line-2:rgba(255,255,255,.24);
+    --card:rgba(30,38,52,.92); --card-2:#1c2430; --veld:#232d3c;
+    --shadow:0 18px 44px rgba(0,0,0,.45);
+    --bg:radial-gradient(circle at 12% 6%, rgba(60,45,110,.55), transparent 520px),
+        radial-gradient(circle at 90% 10%, rgba(30,80,70,.5), transparent 520px),
+        #0e131c;
+  }
+  body{font-family:-apple-system,system-ui,"Segoe UI",Inter,ui-sans-serif,sans-serif;
+    color:var(--ink); min-height:100vh; background:var(--bg); background-attachment:fixed;}
+  .app{max-width:1040px; margin:0 auto; padding:24px 18px 60px;}
+  .eyebrow{color:var(--accent2); font-weight:800; text-transform:uppercase; letter-spacing:1.5px; font-size:12.5px;}
+  h1{font-family:"Baloo 2",system-ui,sans-serif; font-weight:800; font-size:clamp(32px,5vw,50px); line-height:1.02; margin:4px 0 4px;}
+  .lead{color:var(--muted); font-size:15.5px; max-width:660px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);}
+  .balk{margin-top:18px; padding:16px 18px; display:flex; flex-wrap:wrap; gap:14px 22px; align-items:flex-end;}
+  .veld{display:flex; flex-direction:column; gap:6px;}
+  .veld label,.tempolabel{font-size:11.5px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.6px;}
+  select{padding:11px 14px; border:1px solid var(--line-2); border-radius:14px; background:var(--veld);
+    font-family:inherit; font-size:15px; font-weight:600; color:var(--ink); min-width:250px; cursor:pointer;}
+  input[type=range]{accent-color:var(--accent); width:150px;}
+  .tempoval{color:var(--accent); font-weight:900;}
+  .groep-controls{display:flex; gap:12px 16px; flex-wrap:wrap; align-items:flex-end;}
+  .chip{border:1px solid var(--line-2); background:var(--veld); color:var(--ink); font-family:inherit;
+    font-weight:800; font-size:14px; padding:11px 15px; border-radius:13px; cursor:pointer;
+    transition:transform .07s ease, background .15s; display:inline-flex; align-items:center; gap:8px;}
+  .chip:hover{transform:translateY(-1px);}
+  .chip.aan{background:var(--accent); color:#fff; border-color:transparent;}
+  .chip .bol{width:15px; height:15px; border-radius:50%; border:2px solid currentColor; opacity:.5;}
+  .chip.aan .bol{background:#fff; border-color:#fff; opacity:1;}
+  .seg{display:inline-flex; padding:5px; gap:4px; background:var(--veld); border:1px solid var(--line-2); border-radius:16px;}
+  .seg button{border:none; background:transparent; color:var(--ink); font-family:inherit; font-weight:800;
+    font-size:14.5px; padding:9px 16px; border-radius:12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px;}
+  .seg button.aan{background:var(--accent); color:#fff;}
+  .lettergrootte{align-items:center;}
+  .lettergrootte button{font-size:16px; padding:8px 14px;}
+  .lettergrootte #wszlabel{font-size:13px; font-weight:800; color:var(--muted); min-width:44px; text-align:center;}
+  .niveaufocus{margin-top:12px; padding:10px 16px; font-size:14px; color:var(--ink);
+    background:var(--card); border:1px dashed var(--line-2); border-radius:14px;}
+  .niveaufocus b{color:var(--accent2);}
+
+  .flits{margin-top:16px; min-height:48vh; display:flex; align-items:center; justify-content:center;
+    position:relative; cursor:pointer; user-select:none; overflow:hidden; padding:26px; background:var(--card-2);}
+  .som{font-size:calc(clamp(40px,11vw,150px) * var(--wsz,1)); font-weight:800; letter-spacing:1px; text-align:center;
+    line-height:1.05; color:var(--ink); transition:opacity .09s; font-family:"Baloo 2",system-ui,sans-serif;
+    max-width:16ch; white-space:normal;}
+  .som.antwoord{color:var(--accent2);}
+  .voortgang{position:absolute; top:14px; right:20px; font-size:15px; color:var(--muted); font-weight:800;}
+  .hint{position:absolute; bottom:16px; left:0; right:0; text-align:center; font-size:13px; color:var(--muted); opacity:.8;}
+  .balkje{position:absolute; left:0; bottom:0; height:6px; width:0; background:var(--accent);}
+  .flits:fullscreen{border-radius:0; background:var(--card-2);}
+  .flits:fullscreen .som{font-size:calc(14vw * var(--wsz,1));}
+  .fsbar{display:none;}
+  .flits:fullscreen .fsbar{display:flex; position:absolute; bottom:26px; left:50%; transform:translateX(-50%); gap:12px; z-index:6;}
+  .flits:fullscreen .fsbar button{font-size:22px; padding:14px 22px; border-radius:16px; border:none; cursor:pointer; background:var(--accent); color:#fff; font-weight:800;}
+  .flits:fullscreen .fsbar button.grijs{background:rgba(140,140,160,.35); color:var(--ink);}
+  .flits:fullscreen .fshint{display:block;}
+  .fshint{display:none; position:absolute; top:16px; left:0; right:0; text-align:center; color:var(--muted); font-size:15px;}
+  .klaar{position:absolute; inset:0; background:var(--card-2); display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px; text-align:center; padding:20px; z-index:7;}
+  .klaar.aan{display:flex;}
+  .klaar .big{font-size:clamp(30px,6vw,56px); font-weight:900; font-family:"Baloo 2",sans-serif;}
+  .klaar .sub{color:var(--muted); font-size:16px;}
+  .klaar .rij{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+
+  .race{margin-top:16px; padding:22px; display:none;}
+  .race.aan{display:block;}
+  .racekop{display:flex; flex-wrap:wrap; align-items:center; gap:16px; justify-content:space-between; margin-bottom:16px;}
+  .tijd{font-size:clamp(46px,9vw,78px); font-weight:900; font-variant-numeric:tabular-nums; font-family:"Baloo 2",sans-serif; color:var(--ink);}
+  .tijd.rood{color:#e2534a;}
+  .racegrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px 16px;}
+  .rw{font-size:clamp(20px,2.4vw,27px); font-weight:700; padding:7px 4px; border-bottom:1px dotted var(--line-2); color:var(--ink);}
+  .race-instr{color:var(--muted); font-size:14px; margin-top:14px;}
+
+  .knoppen{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;}
+  button.btn{font-family:inherit; font-size:16px; font-weight:800; border:1px solid var(--line-2); cursor:pointer;
+    padding:13px 20px; border-radius:15px; background:var(--veld); color:var(--ink); transition:transform .07s ease;}
+  button.btn:hover{transform:translateY(-2px);}
+  button.btn.primair{background:var(--accent); color:#fff; border-color:transparent; font-size:19px; padding:15px 30px;}
+
+  .kaartprint{display:none;}
+  @media print{
+    body{background:#fff;} .app{display:none;}
+    .kaartprint{display:block; padding:12mm 12mm; color:#1f2c34;}
+    .kaartprint h2{font-size:22px; text-align:center;}
+    .kaartprint .instr{text-align:center; color:#555; font-size:13px; margin:4px 0 10px;}
+    .kaartprint .naamrij{display:flex; justify-content:space-between; font-size:13px; color:#333; margin:0 2mm 10px;}
+    .kaartprint .naamrij span{border-bottom:1px solid #999; min-width:60mm; display:inline-block;}
+    .kaartprint .kolommen{columns:2; column-gap:16mm;}
+    .kaartprint .rij{font-size:16px; padding:5px 4px; border-bottom:1px dotted #bbb; break-inside:avoid;}
+    .kaartprint .rij .nr{color:#999; font-size:12px; margin-right:6px;}
+    .kaartprint .antw{margin-top:12mm;}
+    .kaartprint .antw h3{font-size:15px;}
+    .kaartprint .antw .kolommen{columns:3;}
+    .kaartprint .antw .rij{font-size:13px;}
+    @page{size:A4 portrait; margin:12mm;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">Automatiseren met sommen</div>
+    <h1>Rekenflitser</h1>
+    <div class="lead">Flits sommen om vlot te leren rekenen: tafels, plus- en minsommen, en een aparte <b>grote-getallen-flitser</b> (×10, ×100, ×1.000 en sommen tot 100.000). Klassikaal op het digibord of zelf op de tablet. Met een sprint-timer en een printbaar sommenblad.</div>
+  </header>
+
+  <div class="card balk">
+    <div class="veld">
+      <label>Modus</label>
+      <div class="seg">
+        <button class="aan" id="modeFlits">⚡ Flitsen</button>
+        <button id="modeSprint">🏁 Sprint</button>
+      </div>
+    </div>
+    <div class="veld">
+      <label for="lijst">Soort sommen</label>
+      <select id="lijst"></select>
+    </div>
+    <span class="groep-controls" id="flitscontrols">
+      <button class="chip aan" id="auto"><span class="bol"></span> Automatisch</button>
+      <div class="veld" id="tempoveld">
+        <span class="tempolabel">Tempo: <span class="tempoval" id="tempoval">3,0 sec</span></span>
+        <input type="range" id="tempo" min="0.5" max="6" step="0.5" value="3">
+      </div>
+      <button class="chip" id="toonKnop"><span class="bol"></span> Toon antwoord</button>
+    </span>
+    <span class="groep-controls">
+      <button class="chip" id="digibordKnop"><span class="bol"></span> Digibord</button>
+      <div class="veld">
+        <label>Lettergrootte</label>
+        <div class="seg lettergrootte">
+          <button id="kleiner" title="Kleiner">A−</button>
+          <span id="wszlabel">100%</span>
+          <button id="groter" title="Groter">A+</button>
+        </div>
+      </div>
+    </span>
+  </div>
+
+  <div class="niveaufocus" id="niveaufocus"></div>
+
+  <div id="flitsview">
+    <div class="card flits" id="flits">
+      <span class="voortgang" id="voortgang"></span>
+      <span class="fshint" id="fshint">Tik links = terug · tik rechts = verder</span>
+      <span class="som" id="som">Klaar?</span>
+      <span class="hint" id="hint">Klik hier of druk op spatie</span>
+      <span class="balkje" id="balkje"></span>
+      <div class="fsbar" id="fsbar">
+        <button class="grijs" id="fsVorige">◀</button>
+        <button id="fsStart">▶</button>
+        <button class="grijs" id="fsVolgende">▶▶</button>
+        <button class="grijs" id="fsSluit">✕</button>
+      </div>
+      <div class="klaar" id="klaar">
+        <div class="big">Ronde klaar! 🎉</div>
+        <div class="sub">Goed gerekend. Nog een keer of verder?</div>
+        <div class="rij">
+          <button class="btn primair" id="opnieuwKnop">↻ Nieuwe sommen</button>
+        </div>
+      </div>
+    </div>
+    <div class="knoppen">
+      <button class="btn primair" id="startKnop">▶ Start</button>
+      <button class="btn" id="vorigeKnop">◀ Vorige</button>
+      <button class="btn" id="volgendeKnop">Volgende ▶</button>
+      <button class="btn" id="grootKnop">⤢ Groot scherm</button>
+    </div>
+  </div>
+
+  <div id="sprintview">
+    <div class="card race" id="race">
+      <div class="racekop">
+        <div class="tijd" id="tijd">1:00</div>
+        <div class="knoppen" style="margin:0;">
+          <button class="btn primair" id="raceStart">▶ Start (1 min)</button>
+          <button class="btn" id="raceReset">↻ Nieuwe sommen</button>
+        </div>
+      </div>
+      <div class="racegrid" id="racegrid"></div>
+      <div class="race-instr">Reken zo veel mogelijk sommen uit in 1 minuut (op papier). Doe het vaker en probeer je eigen record te verbeteren.</div>
+    </div>
+  </div>
+
+  <div class="knoppen">
+    <button class="btn" id="printKnop">🖨 Print sommenblad</button>
+  </div>
+</div>
+
+<div class="kaartprint" id="kaartprint"></div>
+
+<script>
+const R=(lo,hi)=>Math.floor(Math.random()*(hi-lo+1))+lo;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const g=n=>n.toLocaleString('nl-NL');
+
+function keer(alo,ahi,blo,bhi){const a=R(alo,ahi),b=R(blo,bhi);return{v:`${a} × ${b} =`,a:String(a*b)};}
+function deeltafel(){const d=R(2,10),q=R(1,10);return{v:`${d*q} : ${d} =`,a:String(q)};}
+function plusTot(max){const a=R(2,max-1),b=R(1,max-a);return{v:`${a} + ${b} =`,a:String(a+b)};}
+function minTot(max){const a=R(3,max),b=R(1,a-1);return{v:`${a} − ${b} =`,a:String(a-b)};}
+function plus2(){const a=R(11,88),b=R(6,99-a);return{v:`${a} + ${b} =`,a:String(a+b)};}
+function min2(){const a=R(21,99),b=R(6,a-2);return{v:`${a} − ${b} =`,a:String(a-b)};}
+function keer2(){const a=R(11,30),b=R(2,9);return{v:`${a} × ${b} =`,a:String(a*b)};}
+function keerGroot(){const a=R(11,40),b=R(11,40);return{v:`${a} × ${b} =`,a:g(a*b)};}
+function maal10(){const f=pick([10,100,1000]);
+  const base=f===1000?R(2,99):f===100?pick([R(2,99),R(2,9)*10]):pick([R(2,99),R(2,50)*10,R(2,20)*100]);
+  return{v:`${g(base)} × ${g(f)} =`,a:g(base*f)};}
+function deel10(){const f=pick([10,100,1000]);
+  const base=f===1000?R(2,99):f===100?pick([R(2,99),R(2,9)*10]):pick([R(2,99),R(2,50)*10,R(2,20)*100]);
+  return{v:`${g(base*f)} : ${g(f)} =`,a:g(base)};}
+function grootPM(){const unit=pick([100,1000]); const a=R(11,89)*unit; const b=R(1,Math.floor(a/unit)-1)*unit;
+  if(Math.random()<0.5) return {v:`${g(a)} + ${g(b)} =`,a:g(a+b)};
+  return {v:`${g(a)} − ${g(b)} =`,a:g(a-b)};}
+
+const GROEPEN = {
+  "Tafels": {
+    "Tafels 1 t/m 10": ()=>keer(1,10,1,10),
+    "Tafels 6 t/m 9 (lastig)": ()=>keer(6,9,1,10),
+    "Deeltafels 1 t/m 10": ()=>deeltafel(),
+  },
+  "Plus & min": {
+    "Plussommen tot 20": ()=>plusTot(20),
+    "Minsommen tot 20": ()=>minTot(20),
+    "Plussommen tot 100": ()=>plus2(),
+    "Minsommen tot 100": ()=>min2(),
+  },
+  "Keer & deel": {
+    "Keer: 2-cijferig × 1-cijferig": ()=>keer2(),
+  },
+  "Grote getallen (moeilijk)": {
+    "Keer 10, 100 en 1.000": ()=>maal10(),
+    "Deel door 10, 100 en 1.000": ()=>deel10(),
+    "Grote getallen: plus & min": ()=>grootPM(),
+    "Grote keersommen (2-cijf. × 2-cijf.)": ()=>keerGroot(),
+  },
+};
+const FOCUS = {
+  "Tafels 1 t/m 10":"Alle tafels vlot uit je hoofd.",
+  "Tafels 6 t/m 9 (lastig)":"De pittigste tafels extra oefenen.",
+  "Deeltafels 1 t/m 10":"Delen als omgekeerde van de tafels.",
+  "Plussommen tot 20":"Snel optellen tot 20 (splitsen en doortellen).",
+  "Minsommen tot 20":"Vlot aftrekken tot 20.",
+  "Plussommen tot 100":"Optellen met tientallen en eenheden.",
+  "Minsommen tot 100":"Aftrekken over het tiental heen.",
+  "Keer: 2-cijferig × 1-cijferig":"Handig splitsen: 23 × 4 = 20 × 4 + 3 × 4.",
+  "Keer 10, 100 en 1.000":"De komma/nullen-truc: keer 10, 100 of 1.000.",
+  "Deel door 10, 100 en 1.000":"Nullen weghalen bij delen door 10, 100 of 1.000.",
+  "Grote getallen: plus & min":"Handig rekenen met ronde honderd- en duizendtallen.",
+  "Grote keersommen (2-cijf. × 2-cijf.)":"Splitsen: 24 × 13 = 24 × 10 + 24 × 3.",
+};
+
+const $=id=>document.getElementById(id);
+const sel=$('lijst'), somEl=$('som'), voortgangEl=$('voortgang'), hintEl=$('hint'), balkje=$('balkje');
+const startKnop=$('startKnop'), autoChip=$('auto'), toonChip=$('toonKnop'), tempoEl=$('tempo'), digibordKnop=$('digibordKnop');
+let modus="flitsen", basis=[], set=[], idx=0, fase="som", timer=null, raceTimer=null, raceSec=60, wsz=1;
+const isAuto=()=>autoChip.classList.contains('aan');
+const isToon=()=>toonChip.classList.contains('aan');
+
+// select vullen
+for(const grp in GROEPEN){
+  const og=document.createElement('optgroup'); og.label=grp;
+  for(const naam in GROEPEN[grp]){ const o=document.createElement('option'); o.value=naam; o.textContent=naam; og.appendChild(o); }
+  sel.appendChild(og);
+}
+sel.value="Tafels 1 t/m 10";
+
+function genVoor(naam){ for(const grp in GROEPEN){ if(GROEPEN[grp][naam]) return GROEPEN[grp][naam]; } return null; }
+function bouwSet(n=30){
+  const fn=genVoor(sel.value); const s=[], seen=new Set(); let p=0;
+  while(s.length<n && p<3000){ p++; const it=fn(); if(seen.has(it.v)) continue; seen.add(it.v); s.push(it); }
+  return s;
+}
+function bewaar(){ try{ localStorage.setItem('rekenflitser', JSON.stringify({
+  lijst:sel.value, tempo:tempoEl.value, auto:isAuto(), toon:isToon(),
+  digibord:document.body.classList.contains('digibord'), modus, wsz })); }catch(e){} }
+function herstel(){
+  let s; try{ s=JSON.parse(localStorage.getItem('rekenflitser')||'{}'); }catch(e){ s={}; }
+  if(s.lijst && genVoor(s.lijst)) sel.value=s.lijst;
+  if(s.tempo) tempoEl.value=s.tempo;
+  if(s.auto===false) autoChip.classList.remove('aan');
+  if(s.toon) toonChip.classList.add('aan');
+  if(s.digibord){ document.body.classList.add('digibord'); digibordKnop.classList.add('aan'); }
+  if(s.modus==="sprint") modus="sprint";
+  if(typeof s.wsz==='number') wsz=s.wsz;
+}
+
+function pasWszToe(){ document.body.style.setProperty('--wsz', wsz); $('wszlabel').textContent=Math.round(wsz*100)+'%'; }
+function stelWsz(n){ wsz=Math.min(1.6,Math.max(0.4,Math.round(n*100)/100)); pasWszToe(); bewaar(); }
+
+function toonFocus(){ const f=FOCUS[sel.value], el=$('niveaufocus'); if(f){ el.style.display='block'; el.innerHTML='<b>Handig:</b> '+f; } else el.style.display='none'; }
+
+function laad(reset=true){
+  basis=bouwSet(); set=basis.slice(); if(reset){ idx=0; fase="som"; }
+  stop(); verbergKlaar(); toonFocus();
+  if(modus==="sprint"){ renderSprint(); return; }
+  toon();
+}
+function toon(){
+  if(!set.length) return;
+  const it=set[idx];
+  somEl.style.opacity=0;
+  requestAnimationFrame(()=>{ somEl.textContent = (fase==='antwoord') ? (it.v+' '+it.a) : it.v; somEl.style.opacity=1; });
+  somEl.classList.toggle('antwoord', fase==='antwoord');
+  voortgangEl.textContent=(idx+1)+" / "+set.length;
+  if(timer && isAuto()) animeerBalk(parseFloat(tempoEl.value));
+}
+function animeerBalk(sec){ balkje.style.transition='none'; balkje.style.width='0%';
+  requestAnimationFrame(()=>{ balkje.style.transition='width '+sec+'s linear'; balkje.style.width='100%'; }); }
+function resetBalk(){ balkje.style.transition='none'; balkje.style.width='0%'; }
+function tick(){
+  if(isToon() && fase==='som'){ fase='antwoord'; toon(); return; }
+  if(idx<set.length-1){ idx++; fase='som'; toon(); } else { stop(); toonKlaar(); }
+}
+function start(){ if(!set.length) return; verbergKlaar();
+  if(isAuto()){ stop(); timer=setInterval(tick, parseFloat(tempoEl.value)*1000); startKnop.textContent="⏸ Pauze"; $('fsStart').textContent="⏸"; animeerBalk(parseFloat(tempoEl.value)); }
+  else volgende();
+}
+function stop(){ if(timer){clearInterval(timer); timer=null;} startKnop.textContent="▶ Start"; $('fsStart').textContent="▶"; resetBalk(); }
+function toggleStart(){ if(timer) stop(); else start(); }
+function volgende(){ if(!set.length) return;
+  if(isToon() && fase==='som'){ fase='antwoord'; toon(); return; }
+  if(idx<set.length-1){ idx++; fase='som'; toon(); } else { stop(); toonKlaar(); } }
+function vorige(){ if(!set.length) return; idx=Math.max(0,idx-1); fase='som'; toon(); }
+function toonKlaar(){ $('klaar').classList.add('aan'); }
+function verbergKlaar(){ $('klaar').classList.remove('aan'); }
+
+function renderSprint(){ $('racegrid').innerHTML=set.map(it=>'<div class="rw">'+it.v+'</div>').join(''); raceStop(true); }
+function updateTijd(){ const m=Math.floor(raceSec/60), s=raceSec%60; $('tijd').textContent=m+":"+(s<10?"0":"")+s; $('tijd').classList.toggle('rood', raceSec<=10); }
+function raceStartFn(){ if(raceTimer){ raceStop(); return; }
+  raceTimer=setInterval(()=>{ raceSec--; updateTijd(); if(raceSec<=0){ raceStop(); $('tijd').textContent="Tijd!"; } },1000);
+  $('raceStart').textContent="⏸ Pauze"; }
+function raceStop(vol){ if(raceTimer){ clearInterval(raceTimer); raceTimer=null; } $('raceStart').textContent="▶ Start (1 min)";
+  if(vol){ raceSec=60; updateTijd(); $('tijd').classList.remove('rood'); } }
+
+function applyModusUI(){
+  $('modeFlits').classList.toggle('aan', modus==='flitsen');
+  $('modeSprint').classList.toggle('aan', modus==='sprint');
+  $('flitsview').style.display = modus==='sprint'?'none':'block';
+  $('sprintview').style.display = modus==='sprint'?'block':'none';
+  $('flitscontrols').style.display = modus==='sprint'?'none':'flex';
+}
+function zetModus(m){ modus=m; applyModusUI(); laad(true); bewaar(); }
+
+// events
+$('modeFlits').addEventListener('click', ()=>zetModus('flitsen'));
+$('modeSprint').addEventListener('click', ()=>zetModus('sprint'));
+sel.addEventListener('change', ()=>{ laad(true); bewaar(); });
+autoChip.addEventListener('click', ()=>{ autoChip.classList.toggle('aan'); $('tempoveld').style.opacity=isAuto()?1:.4; stop(); bewaar(); });
+toonChip.addEventListener('click', ()=>{ toonChip.classList.toggle('aan'); fase='som'; if(modus!=='sprint') toon(); bewaar(); });
+tempoEl.addEventListener('input', ()=>{ $('tempoval').textContent=parseFloat(tempoEl.value).toFixed(1).replace('.',',')+" sec"; if(timer) start(); bewaar(); });
+digibordKnop.addEventListener('click', ()=>{ digibordKnop.classList.toggle('aan'); document.body.classList.toggle('digibord', digibordKnop.classList.contains('aan')); bewaar(); });
+$('kleiner').addEventListener('click', ()=>stelWsz(wsz-0.1));
+$('groter').addEventListener('click', ()=>stelWsz(wsz+0.1));
+startKnop.addEventListener('click', toggleStart);
+$('volgendeKnop').addEventListener('click', ()=>{ stop(); volgende(); });
+$('vorigeKnop').addEventListener('click', ()=>{ stop(); verbergKlaar(); vorige(); });
+$('flits').addEventListener('click', (e)=>{
+  if(e.target.closest('.klaar')||e.target.closest('.fsbar')) return;
+  if(document.fullscreenElement){ const r=$('flits').getBoundingClientRect();
+    if(e.clientX-r.left < r.width*0.3){ stop(); vorige(); } else { if(isAuto()) toggleStart(); else volgende(); } return; }
+  if(isAuto()) toggleStart(); else volgende();
+});
+$('opnieuwKnop').addEventListener('click', (e)=>{ e.stopPropagation(); laad(true); start(); });
+$('grootKnop').addEventListener('click', ()=>{ const f=$('flits');
+  if(!document.fullscreenElement){ f.requestFullscreen&&f.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); } });
+$('fsVorige').addEventListener('click',(e)=>{ e.stopPropagation(); stop(); verbergKlaar(); vorige(); });
+$('fsVolgende').addEventListener('click',(e)=>{ e.stopPropagation(); stop(); volgende(); });
+$('fsStart').addEventListener('click',(e)=>{ e.stopPropagation(); toggleStart(); });
+$('fsSluit').addEventListener('click',(e)=>{ e.stopPropagation(); document.exitFullscreen&&document.exitFullscreen(); });
+document.addEventListener('keydown', (e)=>{ if(modus==='sprint') return;
+  if(e.code==="Space"){ e.preventDefault(); if(isAuto()) toggleStart(); else volgende(); }
+  else if(e.code==="ArrowRight"){ stop(); volgende(); }
+  else if(e.code==="ArrowLeft"){ stop(); verbergKlaar(); vorige(); } });
+$('raceStart').addEventListener('click', raceStartFn);
+$('raceReset').addEventListener('click', ()=>{ laad(true); });
+$('printKnop').addEventListener('click', ()=>{
+  const naam=sel.value;
+  const rijen=set.map((it,i)=>'<div class="rij"><span class="nr">'+(i+1)+'.</span> '+it.v+' ______</div>').join('');
+  const antw=set.map((it,i)=>'<div class="rij"><span class="nr">'+(i+1)+'.</span> '+it.v+' '+it.a+'</div>').join('');
+  $('kaartprint').innerHTML='<h2>Sommenblad · '+naam+'</h2>'+
+    '<div class="instr">Reken de sommen uit. Succes!</div>'+
+    '<div class="naamrij">Naam: <span></span> &nbsp; Tijd: <span></span></div>'+
+    '<div class="kolommen">'+rijen+'</div>'+
+    '<div class="antw"><h3>Antwoorden (voor de leerkracht)</h3><div class="kolommen">'+antw+'</div></div>';
+  window.print();
+});
+
+// init
+herstel(); pasWszToe(); applyModusUI();
+$('tempoval').textContent=parseFloat(tempoEl.value).toFixed(1).replace('.',',')+" sec";
+$('tempoveld').style.opacity=isAuto()?1:.4;
+hintEl.textContent="Klik hier of druk op spatie";
+laad(true);
+</script>
+</body>
+</html>
