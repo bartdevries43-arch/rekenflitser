@@ -10,18 +10,18 @@
 <style>
   *{margin:0; padding:0; box-sizing:border-box;}
   :root{
-    --ink:#212a35; --muted:#6a7683; --accent:#7c5cff; --accent2:#2fa37a;
-    --line:rgba(124,92,255,.20); --line-2:rgba(124,92,255,.32);
-    --card:rgba(255,255,255,.86); --card-2:#ffffff; --veld:#ffffff;
-    --shadow:0 18px 44px rgba(70,58,120,.12); --radius:22px;
+    --ink:#1c2433; --muted:#667085; --accent:#4f46e5; --accent2:#0e9f9e;
+    --line:rgba(79,70,229,.13); --line-2:rgba(79,70,229,.25);
+    --card:rgba(255,255,255,.92); --card-2:#ffffff; --veld:#ffffff;
+    --shadow:0 14px 38px rgba(31,41,90,.09); --radius:22px;
     --bg:
-      radial-gradient(circle at 10% 6%, rgba(178,236,213,.55), transparent 460px),
-      radial-gradient(circle at 92% 8%, rgba(206,188,255,.62), transparent 520px),
-      radial-gradient(circle at 50% 112%, rgba(178,236,213,.30), transparent 560px),
-      #eef1f7;
+      radial-gradient(circle at 6% 0%, rgba(14,159,158,.14), transparent 440px),
+      radial-gradient(circle at 96% 4%, rgba(79,70,229,.16), transparent 500px),
+      radial-gradient(circle at 50% 110%, rgba(14,159,158,.10), transparent 560px),
+      #f3f5fb;
   }
   body.digibord{
-    --ink:#f2f6fb; --muted:#9fb0c2; --accent:#a68bff; --accent2:#4fd3a0;
+    --ink:#f2f6fb; --muted:#9fb0c2; --accent:#8b87ff; --accent2:#3fd0c9;
     --line:rgba(255,255,255,.14); --line-2:rgba(255,255,255,.24);
     --card:rgba(30,38,52,.92); --card-2:#1c2430; --veld:#232d3c;
     --shadow:0 18px 44px rgba(0,0,0,.45);
@@ -32,9 +32,20 @@
   body{font-family:-apple-system,system-ui,"Segoe UI",Inter,ui-sans-serif,sans-serif;
     color:var(--ink); min-height:100vh; background:var(--bg); background-attachment:fixed;}
   .app{max-width:1040px; margin:0 auto; padding:24px 18px 60px;}
-  .eyebrow{color:var(--accent2); font-weight:800; text-transform:uppercase; letter-spacing:1.5px; font-size:12.5px;}
-  h1{font-family:"Baloo 2",system-ui,sans-serif; font-weight:800; font-size:clamp(32px,5vw,50px); line-height:1.02; margin:4px 0 4px;}
-  .lead{color:var(--muted); font-size:15.5px; max-width:660px;}
+  .eyebrow{font-weight:800; text-transform:uppercase; letter-spacing:1.4px; font-size:12px; color:rgba(255,255,255,.82);}
+  h1{font-family:"Baloo 2",system-ui,sans-serif; font-weight:800; font-size:clamp(32px,5vw,48px); line-height:1.02; margin:2px 0 0; color:#fff;}
+  .lead{color:rgba(255,255,255,.9); font-size:15.5px; max-width:680px; margin-top:12px; position:relative;}
+  .kop{position:relative; overflow:hidden; border-radius:26px; padding:24px 26px 22px; color:#fff;
+    background:linear-gradient(125deg,#4f46e5 0%,#3b5bdb 48%,#0e9f9e 100%); box-shadow:0 18px 40px rgba(59,91,219,.26);}
+  .kop::before,.kop::after{content:""; position:absolute; border-radius:50%; background:rgba(255,255,255,.08); pointer-events:none;}
+  .kop::before{width:260px; height:260px; right:-70px; top:-90px;}
+  .kop::after{width:160px; height:160px; right:120px; bottom:-100px;}
+  .kop-merk{display:flex; align-items:center; gap:14px; position:relative;}
+  .logo{flex:none; width:56px; height:56px; border-radius:17px; display:flex; align-items:center; justify-content:center;
+    font-size:28px; background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.32);}
+  body.digibord .kop{background:linear-gradient(125deg,#2b2677 0%,#1d3a78 48%,#0b5e5d 100%);}
+  .voet{text-align:center; color:var(--muted); font-size:13px; margin-top:34px;}
+  .voet a{color:var(--accent); font-weight:700; text-decoration:none;}
   .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
     box-shadow:var(--shadow); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);}
   .balk{margin-top:18px; padding:16px 18px; display:flex; flex-wrap:wrap; gap:14px 22px; align-items:flex-end;}
@@ -60,7 +71,7 @@
   .lettergrootte button{font-size:16px; padding:8px 14px;}
   .lettergrootte #wszlabel{font-size:13px; font-weight:800; color:var(--muted); min-width:44px; text-align:center;}
   .niveaufocus{margin-top:12px; padding:10px 16px; font-size:14px; color:var(--ink);
-    background:var(--card); border:1px dashed var(--line-2); border-radius:14px;}
+    background:rgba(14,159,158,.08); border:1px solid rgba(14,159,158,.22); border-radius:14px;}
   .niveaufocus b{color:var(--accent2);}
 
   .flits{margin-top:16px; min-height:48vh; display:flex; align-items:center; justify-content:center;
@@ -100,7 +111,8 @@
   button.btn{font-family:inherit; font-size:16px; font-weight:800; border:1px solid var(--line-2); cursor:pointer;
     padding:13px 20px; border-radius:15px; background:var(--veld); color:var(--ink); transition:transform .07s ease;}
   button.btn:hover{transform:translateY(-2px);}
-  button.btn.primair{background:var(--accent); color:#fff; border-color:transparent; font-size:19px; padding:15px 30px;}
+  button.btn.primair{background:linear-gradient(120deg,var(--accent),#3b5bdb); color:#fff; border-color:transparent; font-size:19px; padding:15px 30px;
+    box-shadow:0 8px 20px rgba(79,70,229,.25);}
 
   .kaartprint{display:none;}
   @media print{
@@ -123,9 +135,11 @@
 </head>
 <body>
 <div class="app">
-  <header>
-    <div class="eyebrow">Automatiseren met sommen</div>
-    <h1>Rekenflitser</h1>
+  <header class="kop">
+    <div class="kop-merk">
+      <span class="logo">🔢</span>
+      <div><div class="eyebrow">Lesmateriaal Blink · automatiseren</div><h1>Rekenflitser</h1></div>
+    </div>
     <div class="lead">Flits sommen om vlot te leren rekenen: tafels, plus- en minsommen, en een aparte <b>grote-getallen-flitser</b> (×10, ×100, ×1.000 en sommen tot 100.000). Klassikaal op het digibord of zelf op de tablet. Met een sprint-timer en een printbaar sommenblad.</div>
   </header>
 
@@ -210,6 +224,7 @@
   <div class="knoppen">
     <button class="btn" id="printKnop">🖨 Print sommenblad</button>
   </div>
+  <footer class="voet">Rekenflitser · onderdeel van <a href="https://bartdevries43-arch.github.io/lesmateriaal-blink/">Lesmateriaal Blink</a> · Bart de Vries</footer>
 </div>
 
 <div class="kaartprint" id="kaartprint"></div>
